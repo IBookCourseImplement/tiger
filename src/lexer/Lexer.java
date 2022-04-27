@@ -5,6 +5,7 @@ import static control.Control.ConLexer.dump;
 import java.io.InputStream;
 
 import lexer.Token.Kind;
+import util.Bug;
 import util.Todo;
 
 public class Lexer {
@@ -37,6 +38,7 @@ public class Lexer {
         if (-1 == c) return new Token(Kind.TOKEN_EOF, lineNum);
 
         switch (c) {
+            // below branches are for the "special characters"
             case '+':
                 return new Token(Kind.TOKEN_ADD, lineNum);
             case '-':
@@ -57,15 +59,41 @@ public class Lexer {
                 return new Token(Kind.TOKEN_LBRACK, lineNum);
             case '(':
                 return new Token(Kind.TOKEN_LPAREN, lineNum);
+            case '<':
+                return new Token(Kind.TOKEN_LT, lineNum);
+            case '!':
+                return new Token(Kind.TOKEN_NOT, lineNum);
+            case ')':
+                return new Token(Kind.TOKEN_RPAREN, lineNum);
+            case '}':
+                return new Token(Kind.TOKEN_RBRACE, lineNum);
+            case ']':
+                return new Token(Kind.TOKEN_RBRACK, lineNum);
+            case ';':
+                return new Token(Kind.TOKEN_SEMI, lineNum);
+            case '&':
+                this.fstream.mark(1);
+                c = this.fstream.read();
+                if (c == '&') {
+                    return new Token(Kind.TOKEN_AND, lineNum);
+                } else {
+                    this.fstream.reset();
+                    new Bug();
+                }
             default:
                 // Lab 1, exercise 2: supply missing code to
                 // lex other kinds of tokens.
-                // Hint: think carefully about the basic
-                // data structure and algorithms. The code
-                // is not that much and may be less than 50 lines. If you
-                // find you are writing a lot of code, you
-                // are on the wrong way.
-                new Todo();
+                // Less than 50 lines, Please!
+                // Below is used to lex identifiers, numbers, and keywords.
+                if (Character.isLetter(c)) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append((char) c);
+                    c = this.fstream.read();
+                    while (Character.isLetterOrDigit(c)) {
+                        sb.append((char) c);
+                        c = this.fstream.read();
+                    }
+                }
                 return null;
         }
     }
