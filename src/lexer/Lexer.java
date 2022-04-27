@@ -3,6 +3,8 @@ package lexer;
 import static control.Control.ConLexer.dump;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import lexer.Token.Kind;
 import util.Bug;
@@ -12,6 +14,30 @@ public class Lexer {
     String fname; // the input file name to be compiled
     InputStream fstream; // input stream for the above file
     int lineNum = 1;
+    static final Map<String, Token.Kind> tokenMapper = new HashMap<>() {{
+        put("boolean", Kind.TOKEN_BOOLEAN);
+        put("class", Kind.TOKEN_CLASS);
+        put("else", Kind.TOKEN_ELSE);
+        put("extends", Kind.TOKEN_EXTENDS);
+        put("false", Kind.TOKEN_FALSE);
+        put("if", Kind.TOKEN_IF);
+        put("int", Kind.TOKEN_INT);
+        put("length", Kind.TOKEN_LENGTH);
+        put("main", Kind.TOKEN_MAIN);
+        put("new", Kind.TOKEN_NEW);
+        put("null", Kind.TOKEN_NULL);
+        put("out", Kind.TOKEN_OUT);
+        put("println", Kind.TOKEN_PRINTLN);
+        put("public", Kind.TOKEN_PUBLIC);
+        put("return", Kind.TOKEN_RETURN);
+        put("static", Kind.TOKEN_STATIC);
+        put("String", Kind.TOKEN_STRING);
+        put("System", Kind.TOKEN_SYSTEM);
+        put("this", Kind.TOKEN_THIS);
+        put("true", Kind.TOKEN_TRUE);
+        put("void", Kind.TOKEN_VOID);
+        put("while", Kind.TOKEN_WHILE);
+    }};
 
     public Lexer(String fname, InputStream fstream) {
         this.fname = fname;
@@ -93,6 +119,24 @@ public class Lexer {
                         sb.append((char) c);
                         c = this.fstream.read();
                     }
+
+                    if (c == '\n') lineNum++;
+                    final var s = sb.toString();
+                    if (tokenMapper.containsKey(s)) {
+                        return new Token(tokenMapper.get(s), lineNum);  // return the token
+                    } else {
+                        return new Token(Kind.TOKEN_ID, lineNum, s);
+                    }
+                } else if (Character.isDigit(c)) {
+                    // lexer number
+                    StringBuilder sb = new StringBuilder();
+                    sb.append((char) c);
+                    c = this.fstream.read();
+                    while (Character.isDigit(c)) {
+                        sb.append((char) c);
+                        c = this.fstream.read();
+                    }
+                    return new Token(Kind.TOKEN_NUM, lineNum, sb.toString());
                 }
                 return null;
         }
