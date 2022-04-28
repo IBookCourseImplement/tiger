@@ -115,11 +115,13 @@ public class Lexer {
                     StringBuilder sb = new StringBuilder();
                     sb.append((char) c);
                     c = this.fstream.read();
-                    while (Character.isLetterOrDigit(c)) {
+                    // TODO: 区别 '-' 语义： sub symbol and id definition
+                    while (Character.isLetterOrDigit(c) | c == '_') {
                         sb.append((char) c);
                         c = this.fstream.read();
                     }
 
+                    // 待测试 这里应该需要换行判断
                     if (c == '\n') lineNum++;
                     final var s = sb.toString();
                     if (tokenMapper.containsKey(s)) {
