@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lexer.Token.Kind;
-import util.Bug;
-import util.Todo;
 
 public class Lexer {
     String fname; // the input file name to be compiled
@@ -29,6 +27,7 @@ public class Lexer {
         put("null", Kind.TOKEN_NULL);
         put("out", Kind.TOKEN_OUT);
         put("println", Kind.TOKEN_PRINTLN);
+        put("private", Kind.TOKEN_PRIVATE);
         put("public", Kind.TOKEN_PUBLIC);
         put("return", Kind.TOKEN_RETURN);
         put("static", Kind.TOKEN_STATIC);
@@ -45,6 +44,17 @@ public class Lexer {
         this.fstream = fstream;
     }
 
+    private void newLineTCAndSpaceCheck(int c) {
+        if ('\n' == c) {
+            lineNum++;
+            lineIndex = 0;
+        } else if ('\t' == c) {
+            lineIndex += 1;
+        } else if (' ' == c) {
+            lineIndex++;
+        }
+    }
+
     // When called, return the next token (refer to the code "Token.java")
     // from the input stream.
     // Return TOKEN_EOF when reaching the end of the input stream.
@@ -59,10 +69,7 @@ public class Lexer {
 
         // skip all kinds of "blanks"
         while (' ' == c || '\t' == c || '\n' == c) {
-            if (c == '\n') {
-                lineNum++;
-                lineIndex = 0;
-            }
+            newLineTCAndSpaceCheck(c);
             c = this.fstream.read();
             lineIndex++;
         }
@@ -111,7 +118,6 @@ public class Lexer {
                 if (c == '&') {
                     return new Token(Kind.TOKEN_AND, lineNum, tmp);
                 } else {
-                    // TODO: need judge or error handle
                     this.fstream.reset();
                     lineIndex--;
                 }
@@ -120,6 +126,7 @@ public class Lexer {
                 // lex other kinds of tokens.
                 // Less than 50 lines, Please!
                 // Below is used to lex identifiers, numbers, and keywords.
+                // support snake_case variable
                 if (Character.isLetter(c) || c == '_') {
                     tmp = lineIndex;
                     StringBuilder sb = new StringBuilder();
@@ -133,10 +140,7 @@ public class Lexer {
                         lineIndex++;
                     }
                     // 待测试 这里应该需要换行判断
-                    if (c == '\n') {
-                        lineNum++;
-                        lineIndex = 0;
-                    }
+                    newLineTCAndSpaceCheck(c);
                     final var s = sb.toString();
                     if (tokenMapper.containsKey(s)) {
                         return new Token(tokenMapper.get(s), lineNum, tmp);  // return the token
@@ -156,10 +160,7 @@ public class Lexer {
                         lineIndex++;
                     }
                     // 待测试 这里应该需要换行判断
-                    if (c == '\n') {
-                        lineNum++;
-                        lineIndex = 0;
-                    }
+                    newLineTCAndSpaceCheck(c);
                     return new Token(Kind.TOKEN_NUM, lineNum, tmp, sb.toString());
                 }
                 return null;

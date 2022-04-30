@@ -1,6 +1,5 @@
 # Lexer
 
-
 正则表达式
 
 ```regexp
@@ -11,3 +10,10 @@ a*
 . 
 ```
 
+### DFA
+
+
+
+### TODO
+
+- [ ] DFAs优化Lexer

@@ -40,6 +40,7 @@ public class Token {
         // for "println", "System" and "String".
         TOKEN_OUT, // "out"
         TOKEN_PRINTLN, // "println"
+        TOKEN_PRIVATE, // "private"
         TOKEN_PUBLIC, // "public"
         TOKEN_RBRACE, // "}"
         TOKEN_RBRACK, // "]"
@@ -83,9 +84,7 @@ public class Token {
         // to check that the "lineNum" field has been properly set.
         if (this.lineNum == null) new util.Todo();
 
-        s = ": " + ((this.lexeme == null) ? "<NONE>" : this.lexeme) +
-                " : at line " + this.lineNum.toString() +
-                " index: " + this.lineIndex.toString();
+        s = ": " + ((this.lexeme == null) ? "<NONE>" : this.lexeme) + " : at line " + this.lineNum.toString() + " index: " + this.lineIndex.toString();
         return this.kind.toString() + s;
     }
 }
