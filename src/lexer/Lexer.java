@@ -12,7 +12,7 @@ public class Lexer {
     String fname; // the input file name to be compiled
     InputStream fstream; // input stream for the above file
     int lineNum = 1;
-    int lineIndex = 0;
+    int lineCol = 0;
     static final Map<String, Token.Kind> tokenMapper = new HashMap<>() {{
         put("boolean", Kind.TOKEN_BOOLEAN);
         put("class", Kind.TOKEN_CLASS);
@@ -47,11 +47,11 @@ public class Lexer {
     private void newLineTCAndSpaceCheck(int c) {
         if ('\n' == c) {
             lineNum++;
-            lineIndex = 0;
+            lineCol = 0;
         } else if ('\t' == c) {
-            lineIndex += 1;
+            lineCol += 1;
         } else if (' ' == c) {
-            lineIndex++;
+            lineCol++;
         }
     }
 
@@ -60,66 +60,66 @@ public class Lexer {
     // Return TOKEN_EOF when reaching the end of the input stream.
     private Token nextTokenInternal() throws Exception {
         int c = this.fstream.read();
-        lineIndex++;
+        lineCol++;
         if (-1 == c)
             // The value for "lineNum" is now "null",
             // you should modify this to an appropriate
             // line number for the "EOF" token.
-            return new Token(Kind.TOKEN_EOF, lineNum, lineIndex);
+            return new Token(Kind.TOKEN_EOF, lineNum, lineCol);
 
         // skip all kinds of "blanks"
         while (' ' == c || '\t' == c || '\n' == c) {
             newLineTCAndSpaceCheck(c);
             c = this.fstream.read();
-            lineIndex++;
+            lineCol++;
         }
 
-        if (-1 == c) return new Token(Kind.TOKEN_EOF, lineNum, lineIndex);
+        if (-1 == c) return new Token(Kind.TOKEN_EOF, lineNum, lineCol);
 
         switch (c) {
             // below branches are for the "special characters"
             case '+':
-                return new Token(Kind.TOKEN_ADD, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_ADD, lineNum, lineCol);
             case '-':
-                return new Token(Kind.TOKEN_SUB, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_SUB, lineNum, lineCol);
             case '*':
-                return new Token(Kind.TOKEN_TIMES, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_TIMES, lineNum, lineCol);
             case '/':
-                return new Token(Kind.TOKEN_DIV, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_DIV, lineNum, lineCol);
             case '=':
-                return new Token(Kind.TOKEN_ASSIGN, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_ASSIGN, lineNum, lineCol);
             case ',':
-                return new Token(Kind.TOKEN_COMMA, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_COMMA, lineNum, lineCol);
             case '.':
-                return new Token(Kind.TOKEN_DOT, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_DOT, lineNum, lineCol);
             case '{':
-                return new Token(Kind.TOKEN_LBRACE, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_LBRACE, lineNum, lineCol);
             case '[':
-                return new Token(Kind.TOKEN_LBRACK, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_LBRACKET, lineNum, lineCol);
             case '(':
-                return new Token(Kind.TOKEN_LPAREN, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_LPAREN, lineNum, lineCol);
             case '<':
-                return new Token(Kind.TOKEN_LT, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_LT, lineNum, lineCol);
             case '!':
-                return new Token(Kind.TOKEN_NOT, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_NOT, lineNum, lineCol);
             case ')':
-                return new Token(Kind.TOKEN_RPAREN, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_RPAREN, lineNum, lineCol);
             case '}':
-                return new Token(Kind.TOKEN_RBRACE, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_RBRACE, lineNum, lineCol);
             case ']':
-                return new Token(Kind.TOKEN_RBRACK, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_RBRACKET, lineNum, lineCol);
             case ';':
-                return new Token(Kind.TOKEN_SEMI, lineNum, lineIndex);
+                return new Token(Kind.TOKEN_SEMI, lineNum, lineCol);
             case '&':
-                int tmp = lineIndex;
+                int tmp = lineCol;
                 this.fstream.mark(1);
                 c = this.fstream.read();
-                lineIndex++;
+                lineCol++;
                 if (c == '&') {
                     return new Token(Kind.TOKEN_AND, lineNum, tmp);
                 } else {
                     this.fstream.reset();
-                    lineIndex--;
+                    lineCol--;
                 }
             default:
                 // Lab 1, exercise 2: supply missing code to
@@ -128,17 +128,19 @@ public class Lexer {
                 // Below is used to lex identifiers, numbers, and keywords.
                 // support snake_case variable
                 if (Character.isLetter(c) || c == '_') {
-                    tmp = lineIndex;
+                    tmp = lineCol;
                     StringBuilder sb = new StringBuilder();
                     sb.append((char) c);
                     c = this.fstream.read();
-                    lineIndex++;
+                    lineCol++;
                     // TODO: 区别 '-' 语义： sub symbol and id definition
                     while (Character.isLetterOrDigit(c) || c == '_') {
+                        fstream.mark(1);
                         sb.append((char) c);
                         c = this.fstream.read();
-                        lineIndex++;
+                        lineCol++;
                     }
+                    fstream.reset();
                     // 待测试 这里应该需要换行判断
                     newLineTCAndSpaceCheck(c);
                     final var s = sb.toString();
@@ -149,16 +151,18 @@ public class Lexer {
                     }
                 } else if (Character.isDigit(c)) {
                     // lexer number
-                    tmp = lineIndex;
+                    tmp = lineCol;
                     StringBuilder sb = new StringBuilder();
                     sb.append((char) c);
                     c = this.fstream.read();
-                    lineIndex++;
+                    lineCol++;
                     while (Character.isDigit(c)) {
+                        fstream.mark(1);
                         sb.append((char) c);
                         c = this.fstream.read();
-                        lineIndex++;
+                        lineCol++;
                     }
+                    fstream.reset();
                     // 待测试 这里应该需要换行判断
                     newLineTCAndSpaceCheck(c);
                     return new Token(Kind.TOKEN_NUM, lineNum, tmp, sb.toString());
