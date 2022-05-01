@@ -130,16 +130,13 @@ public class Lexer {
                 if (Character.isLetter(c) || c == '_') {
                     tmp = lineCol;
                     StringBuilder sb = new StringBuilder();
-                    sb.append((char) c);
-                    c = this.fstream.read();
-                    lineCol++;
                     // TODO: 区别 '-' 语义： sub symbol and id definition
-                    while (Character.isLetterOrDigit(c) || c == '_') {
+                    do {
                         fstream.mark(1);
                         sb.append((char) c);
                         c = this.fstream.read();
                         lineCol++;
-                    }
+                    } while (Character.isLetterOrDigit(c) || c == '_');
                     fstream.reset();
                     // 待测试 这里应该需要换行判断
                     newLineTCAndSpaceCheck(c);
@@ -153,15 +150,12 @@ public class Lexer {
                     // lexer number
                     tmp = lineCol;
                     StringBuilder sb = new StringBuilder();
-                    sb.append((char) c);
-                    c = this.fstream.read();
-                    lineCol++;
-                    while (Character.isDigit(c)) {
+                    do {
                         fstream.mark(1);
                         sb.append((char) c);
                         c = this.fstream.read();
                         lineCol++;
-                    }
+                    } while (Character.isDigit(c));
                     fstream.reset();
                     // 待测试 这里应该需要换行判断
                     newLineTCAndSpaceCheck(c);
